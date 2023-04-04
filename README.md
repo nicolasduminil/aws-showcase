@@ -1,45 +1,26 @@
-# App
+# Send Money
 
-This project contains an AWS Lambda maven application with [AWS Java SDK 2.x](https://github.com/aws/aws-sdk-java-v2) dependencies.
+This project is an example of API Gateway integration with OpenAPI and Lambda.
 
 ## Prerequisites
-- Java 1.8+
+- Java 11+
 - Apache Maven
+- AWS CLI
 - [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-- Docker
 
-## Development
+## Building the project
 
-The generated function handler class just returns the input. The configured AWS Java SDK client is created in `DependencyFactory` class and you can 
-add the code to interact with the SDK client based on your use case.
+    mvn clean package
 
-#### Building the project
-```
-mvn clean install
-```
-
-#### Testing it locally
-```
-sam local invoke
-```
-
-#### Adding more SDK clients
-To add more service clients, you need to add the specific services modules in `pom.xml` and create the clients in `DependencyFactory` following the same 
-pattern as s3Client.
 
 ## Deployment
 
-The generated project contains a default [SAM template](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html) file `template.yaml` where you can 
-configure different properties of your lambda function such as memory size and timeout. You might also need to add specific policies to the lambda function
-so that it can access other AWS resources.
+    ./deploy.sh
 
-To deploy the application, you can run the following command:
+## Integration tests
+Open the FunctionsIT integration test and make sure that the static constant labeled AWS_GATEWAY_URL matches the URL 
+displayed by the script deploy.sh. Then run the command:
 
-```
-sam deploy --guided
-```
-
-See [Deploying Serverless Applications](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-deploying.html) for more info.
-
+    mvn test-compile failsafe:integration-test
 
 
