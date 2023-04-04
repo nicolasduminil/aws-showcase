@@ -1,0 +1,275 @@
+openapi: 3.0.0
+info:
+  title: Send Money API
+  description: This is a simple API to illustrate the use case of a money transfer service.
+  contact:
+    email: nicolas.duminil@simplex-software.fr
+  version: 1.0.0
+servers:
+  - url: https://virtserver.swaggerhub.com/simplex-software/send-money/1.0.0
+    description: SwaggerHub API Auto Mocking
+tags:
+  - name: admins
+    description: Secured Admin-only calls
+  - name: developers
+    description: Operations available to regular developers
+paths:
+  /orders:
+    get:
+      description: Returns a list of money transfer orders
+      parameters:
+        - name: limit
+          in: query
+          description: Limits the number of items on a page
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: Specifies the page number of the artists to be displayed
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successfully returned a list of money transfer orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MoneyTransferOrder'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response400'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MoneyTransferOrderFunction.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+    put:
+      description: Update an existent money transfer order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoneyTransferOrder'
+        required: true
+      responses:
+        "200":
+          description: Successfuly created a new money transfer order
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response400'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MoneyTransferOrderFunction.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+    post:
+      description: Place a new money transfer order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoneyTransferOrder'
+        required: true
+      responses:
+        "201":
+          description: Successfuly created a new money transfer order
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response400'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MoneyTransferOrderFunction.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+  /orders/{ref}:
+    get:
+      description: Get a money transfer order by its reference
+      parameters:
+        - name: ref
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully returned a money transfer order
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MoneyTransferOrder'
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/response400'
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MoneyTransferOrderFunction.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+    delete:
+      description: Remove a money transfer order identified by its reference
+      parameters:
+        - name: ref
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully deleted a money transfer order
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MoneyTransferOrderFunction.Arn}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+components:
+  schemas:
+    Bank:
+      required:
+        - bankAddresses
+        - bankName
+      type: object
+      properties:
+        bankName:
+          type: string
+        bankAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/BankAddress'
+      description: This business object models a bank.
+    BankAccount:
+      required:
+        - accountNumber
+        - bank
+        - bankAccountName
+        - bankAccountType
+        - sortCode
+        - transCode
+      type: object
+      properties:
+        bank:
+          $ref: '#/components/schemas/Bank'
+        bankAccountName:
+          type: string
+        bankAccountType:
+          type: string
+          enum:
+            - SAVING
+            - CHECKING
+        sortCode:
+          type: string
+        accountNumber:
+          type: string
+        transCode:
+          type: string
+    BankAddress:
+      required:
+        - cityName
+        - countryName
+        - poBox
+        - streetName
+        - streetNumber
+        - zipCode
+      type: object
+      properties:
+        streetName:
+          type: string
+        streetNumber:
+          type: string
+        poBox:
+          type: string
+        cityName:
+          type: string
+        zipCode:
+          type: string
+        countryName:
+          type: string
+    MoneyTransferOrder:
+      required:
+        - sourceAccount
+        - targetAccount
+      type: object
+      properties:
+        sourceAccount:
+          $ref: '#/components/schemas/BankAccount'
+        targetAccount:
+          $ref: '#/components/schemas/BankAccount'
+    response400:
+      type: object
+      properties:
+        message:
+          type: string
+  responses:
+    "400Error":
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/response400'
+  parameters:
+    PageLimit:
+      name: limit
+      in: query
+      description: Limits the number of items on a page
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: integer
+    PageOffset:
+      name: offset
+      in: query
+      description: Specifies the page number of the artists to be displayed
+      required: false
+      style: form
+      explode: true
+      schema:
+        type: integer

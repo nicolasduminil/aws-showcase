@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Send Money SAM Template
+Globals:
+  Function:
+    Runtime: java11
+    MemorySize: 512
+    Timeout: 10
+    Tracing: Active
+Parameters:
+  BucketName:
+    Type: String
+    Description: The name of the S3 bucket in which the OpenAPI specification is stored
+Resources:
+  SendMoneyRestAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name:
+        send-money-api
+      StageName:
+        dev
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location:
+              Fn::Join:
+                - ''
+                - - 's3://'
+                  - Ref: BucketName
+                  - '/openapi.yaml'
+  MoneyTransferOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: MoneyTransferOrderFunction
+      CodeUri: send-money-lambda/target/send-money.jar
+      Handler: fr.simplex_software.aws.lambda.send_money.functions.MoneyTransferOrder::handleRequest
+      Events:
+        GetAll:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: SendMoneyRestAPI
+            Path: /orders
+            Method: GET
+        Get:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: SendMoneyRestAPI
+            Path: /orders
+            Method: GET
+        Create:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: SendMoneyRestAPI
+            Path: /orders
+            Method: POST
+        Update:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: SendMoneyRestAPI
+            Path: /orders
+            Method: PUT
+        Delete:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: SendMoneyRestAPI
+            Path: /orders
+            Method: DELETE
+  ConfigLambdaPermissionForMoneyTransferOrderFunction:
+    Type: "AWS::Lambda::Permission"
+    DependsOn:
+      - SendMoneyRestAPI
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref MoneyTransferOrderFunction
+      Principal: apigateway.amazonaws.com
